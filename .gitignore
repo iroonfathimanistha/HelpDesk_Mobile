@@ -1,118 +1,36 @@
-# ==========================================================
-# PixelPioneers - On-Demand Skilled Services Platform
-# Root .gitignore (applies to every app in this monorepo)
-# ==========================================================
+# Dependencies
+node_modules/
 
-# ---------- Environment variables & secrets ----------
-# Never commit real credentials. Only .env.example files are tracked.
+# Build output
+dist/
+build/
+web-build/
+*.tsbuildinfo
+
+# Expo / React Native
+.expo/
+expo-env.d.ts
+android/
+ios/
+
+# Environment files (commit only .env.example)
 .env
 .env.*
 !.env.example
-*.pem
-*.key
-*.p12
-*.keystore
-!debug.keystore
-*.jks
-google-services.json
-GoogleService-Info.plist
-serviceAccountKey*.json
-firebase-adminsdk*.json
-credentials.json
 
-# ---------- Node.js ----------
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-.npm/
-.yarn/cache
-.yarn/unplugged
-.yarn/install-state.gz
-.pnp.*
-logs/
-*.log
+# Test output
+e2e/test-results/
+e2e/playwright-report/
 coverage/
-.nyc_output/
-*.tsbuildinfo
-.eslintcache
 
-# ---------- Build outputs (React / backend) ----------
-build/
-dist/
-out/
-.cache/
-.parcel-cache/
-.vite/
+# Logs
+*.log
+npm-debug.log*
 
-# ---------- React Native / Expo ----------
-.expo/
-.expo-shared/
-web-build/
-expo-env.d.ts
-.metro-health-check*
-*.jsbundle
-
-# Android
-android/app/build/
-android/build/
-android/.gradle/
-android/captures/
-android/local.properties
-*.apk
-*.aab
-.cxx/
-.externalNativeBuild/
-
-# iOS
-ios/Pods/
-ios/build/
-ios/DerivedData/
-*.xcworkspace/xcuserdata/
-*.xcodeproj/xcuserdata/
-*.xcodeproj/project.xcworkspace/xcuserdata/
-*.ipa
-*.dSYM.zip
-*.dSYM
-*.hmap
-.xcode.env.local
-
-# Bundler (React Native iOS)
-vendor/bundle/
-.bundle/
-
-# ---------- PostgreSQL ----------
-*.sql.gz
-*.dump
-*.backup
-pgdata/
-postgres-data/
-
-# ---------- Uploads / local file storage ----------
-uploads/
-tmp/
-
-# ---------- IDE / editors ----------
+# Editors / OS
 .vscode/*
 !.vscode/extensions.json
-!.vscode/settings.json
 .idea/
-*.iml
-*.swp
-*.swo
-*~
-*.sublime-workspace
-
-# ---------- OS-generated files ----------
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
 Thumbs.db
-ehthumbs.db
 Desktop.ini
-$RECYCLE.BIN/
-package.json
-

@@ -23,11 +23,11 @@ Tokens expire after `JWT_EXPIRES_IN` (default 1 day). On a `401`, send the user 
 
 ### Roles
 
-| Role | Who | How the account is created |
-|---|---|---|
-| `customer` | Households | `POST /auth/register` (default role) |
+| Role       | Who             | How the account is created                      |
+| ---------- | --------------- | ----------------------------------------------- |
+| `customer` | Households      | `POST /auth/register` (default role)            |
 | `provider` | Skilled workers | `POST /auth/register` with `"role": "provider"` |
-| `admin` | Platform staff | `npm run create-admin` on the server only |
+| `admin`    | Platform staff  | `npm run create-admin` on the server only       |
 
 ### Response format
 
@@ -55,16 +55,16 @@ Error:
 
 ### Status codes
 
-| Code | Meaning |
-|---|---|
-| 200 / 201 | OK / Created |
-| 400 | Invalid input (see `error.details`) |
-| 401 | Missing, invalid or expired token — log in again |
-| 403 | Logged in, but your role can't do this |
-| 404 | Not found, **or** you're not allowed to see it |
-| 409 | Conflict — e.g. email taken, job already accepted, wrong job status |
-| 429 | Too many login/register attempts — wait 15 minutes |
-| 500 | Server error |
+| Code      | Meaning                                                             |
+| --------- | ------------------------------------------------------------------- |
+| 200 / 201 | OK / Created                                                        |
+| 400       | Invalid input (see `error.details`)                                 |
+| 401       | Missing, invalid or expired token — log in again                    |
+| 403       | Logged in, but your role can't do this                              |
+| 404       | Not found, **or** you're not allowed to see it                      |
+| 409       | Conflict — e.g. email taken, job already accepted, wrong job status |
+| 429       | Too many login/register attempts — wait 15 minutes                  |
+| 500       | Server error                                                        |
 
 ### Pagination
 
@@ -78,32 +78,32 @@ All ids are integers. **A provider is always identified by their user id** — i
 
 ## Endpoint Summary
 
-| Method | Path | Auth | Used by |
-|---|---|---|---|
-| GET | `/health` | — | All |
-| POST | `/auth/register` | — | Customer, Provider |
-| POST | `/auth/login` | — | All |
-| GET | `/auth/me` | Any role | All |
-| PATCH | `/auth/me` | Any role | All |
-| GET | `/categories` | — | All |
-| POST | `/categories` | admin | Admin |
-| PATCH | `/categories/:id` | admin | Admin |
-| GET | `/providers` | — | Customer |
-| GET | `/providers/:id` | — | Customer |
-| GET | `/providers/:id/reviews` | — | Customer |
-| GET | `/providers/me/profile` | provider | Provider |
-| PATCH | `/providers/me/profile` | provider | Provider |
-| PATCH | `/providers/:id/verification` | admin | Admin |
-| POST | `/service-requests` | customer | Customer |
-| GET | `/service-requests` | Any role | All |
-| GET | `/service-requests/available` | provider | Provider |
-| GET | `/service-requests/:id` | Any role | All |
-| PATCH | `/service-requests/:id/accept` | provider | Provider |
-| PATCH | `/service-requests/:id/decline` | provider | Provider |
-| PATCH | `/service-requests/:id/start` | provider | Provider |
-| PATCH | `/service-requests/:id/complete` | provider | Provider |
-| PATCH | `/service-requests/:id/cancel` | Any role | All |
-| POST | `/service-requests/:id/review` | customer | Customer |
+| Method | Path                             | Auth     | Used by            |
+| ------ | -------------------------------- | -------- | ------------------ |
+| GET    | `/health`                        | —        | All                |
+| POST   | `/auth/register`                 | —        | Customer, Provider |
+| POST   | `/auth/login`                    | —        | All                |
+| GET    | `/auth/me`                       | Any role | All                |
+| PATCH  | `/auth/me`                       | Any role | All                |
+| GET    | `/categories`                    | —        | All                |
+| POST   | `/categories`                    | admin    | Admin              |
+| PATCH  | `/categories/:id`                | admin    | Admin              |
+| GET    | `/providers`                     | —        | Customer           |
+| GET    | `/providers/:id`                 | —        | Customer           |
+| GET    | `/providers/:id/reviews`         | —        | Customer           |
+| GET    | `/providers/me/profile`          | provider | Provider           |
+| PATCH  | `/providers/me/profile`          | provider | Provider           |
+| PATCH  | `/providers/:id/verification`    | admin    | Admin              |
+| POST   | `/service-requests`              | customer | Customer           |
+| GET    | `/service-requests`              | Any role | All                |
+| GET    | `/service-requests/available`    | provider | Provider           |
+| GET    | `/service-requests/:id`          | Any role | All                |
+| PATCH  | `/service-requests/:id/accept`   | provider | Provider           |
+| PATCH  | `/service-requests/:id/decline`  | provider | Provider           |
+| PATCH  | `/service-requests/:id/start`    | provider | Provider           |
+| PATCH  | `/service-requests/:id/complete` | provider | Provider           |
+| PATCH  | `/service-requests/:id/cancel`   | Any role | All                |
+| POST   | `/service-requests/:id/review`   | customer | Customer           |
 
 ---
 
@@ -111,13 +111,13 @@ All ids are integers. **A provider is always identified by their user id** — i
 
 ### `POST /auth/register`
 
-| Field | Type | Required | Rules |
-|---|---|---|---|
-| `fullName` | string | yes | 2–100 chars |
-| `email` | string | yes | valid email, unique (stored lowercase) |
-| `password` | string | yes | 8–72 chars |
-| `phone` | string | no | digits, spaces, `-`, optional leading `+` |
-| `role` | string | no | `customer` (default) or `provider` |
+| Field      | Type   | Required | Rules                                     |
+| ---------- | ------ | -------- | ----------------------------------------- |
+| `fullName` | string | yes      | 2–100 chars                               |
+| `email`    | string | yes      | valid email, unique (stored lowercase)    |
+| `password` | string | yes      | 8–72 chars                                |
+| `phone`    | string | no       | digits, spaces, `-`, optional leading `+` |
+| `role`     | string | no       | `customer` (default) or `provider`        |
 
 `201` →
 
@@ -125,7 +125,16 @@ All ids are integers. **A provider is always identified by their user id** — i
 {
   "success": true,
   "data": {
-    "user": { "id": 1, "fullName": "Nimal Perera", "email": "nimal@example.com", "phone": null, "role": "customer", "isActive": true, "createdAt": "...", "updatedAt": "..." },
+    "user": {
+      "id": 1,
+      "fullName": "Nimal Perera",
+      "email": "nimal@example.com",
+      "phone": null,
+      "role": "customer",
+      "isActive": true,
+      "createdAt": "...",
+      "updatedAt": "..."
+    },
     "token": "eyJhbGciOi..."
   }
 }
@@ -155,7 +164,11 @@ Body (all optional): `fullName`, `phone`. Other fields (role, email, password) a
 Active categories, sorted by name. `200` →
 
 ```json
-{ "categories": [{ "id": 1, "name": "Plumbing", "slug": "plumbing", "description": "...", "isActive": true }] }
+{
+  "categories": [
+    { "id": 1, "name": "Plumbing", "slug": "plumbing", "description": "...", "isActive": true }
+  ]
+}
 ```
 
 ### `POST /categories` — admin
@@ -212,15 +225,15 @@ Sorted by verified first, then highest rating. `200` → `{ "providers": [ ... ]
 
 ### `PATCH /providers/me/profile` — provider
 
-| Field | Type | Rules |
-|---|---|---|
-| `bio` | string | max 1000 chars |
-| `yearsOfExperience` | integer | 0–80 |
-| `hourlyRate` | number | ≥ 0 |
-| `city` | string | max 100 chars |
-| `latitude` / `longitude` | number | -90–90 / -180–180 |
-| `isAvailable` | boolean | |
-| `categoryIds` | integer[] | **replaces** the full list of categories offered |
+| Field                    | Type      | Rules                                            |
+| ------------------------ | --------- | ------------------------------------------------ |
+| `bio`                    | string    | max 1000 chars                                   |
+| `yearsOfExperience`      | integer   | 0–80                                             |
+| `hourlyRate`             | number    | ≥ 0                                              |
+| `city`                   | string    | max 100 chars                                    |
+| `latitude` / `longitude` | number    | -90–90 / -180–180                                |
+| `isAvailable`            | boolean   |                                                  |
+| `categoryIds`            | integer[] | **replaces** the full list of categories offered |
 
 All optional. `200` → `{ "profile": { ... } }`. `400` if a category id doesn't exist.
 
@@ -286,15 +299,15 @@ Calling an action in the wrong status returns `409`, e.g. `Cannot start a servic
 
 ### `POST /service-requests` — customer
 
-| Field | Type | Required | Rules |
-|---|---|---|---|
-| `categoryId` | integer | yes | active category |
-| `title` | string | yes | 3–150 chars |
-| `description` | string | yes | 10–2000 chars |
-| `address` | string | yes | 5–255 chars |
-| `providerId` | integer | no | provider's user id → makes it a **direct** request |
-| `latitude` / `longitude` | number | no | |
-| `preferredDate` | string | no | ISO 8601, e.g. `2026-10-10T09:00:00Z` |
+| Field                    | Type    | Required | Rules                                              |
+| ------------------------ | ------- | -------- | -------------------------------------------------- |
+| `categoryId`             | integer | yes      | active category                                    |
+| `title`                  | string  | yes      | 3–150 chars                                        |
+| `description`            | string  | yes      | 10–2000 chars                                      |
+| `address`                | string  | yes      | 5–255 chars                                        |
+| `providerId`             | integer | no       | provider's user id → makes it a **direct** request |
+| `latitude` / `longitude` | number  | no       |                                                    |
+| `preferredDate`          | string  | no       | ISO 8601, e.g. `2026-10-10T09:00:00Z`              |
 
 `201` → `{ "serviceRequest": { ... } }`
 
@@ -316,22 +329,22 @@ Visible to the customer who created it, the assigned provider, providers who cou
 
 No body. `200` → `{ "serviceRequest": { ... } }`
 
-| Action | Allowed when |
-|---|---|
-| `accept` | `pending`, and either open in one of your categories or sent directly to you |
-| `decline` | `pending` and sent directly to you |
-| `start` | `accepted` by you |
-| `complete` | `in_progress` by you |
+| Action     | Allowed when                                                                 |
+| ---------- | ---------------------------------------------------------------------------- |
+| `accept`   | `pending`, and either open in one of your categories or sent directly to you |
+| `decline`  | `pending` and sent directly to you                                           |
+| `start`    | `accepted` by you                                                            |
+| `complete` | `in_progress` by you                                                         |
 
 ### `PATCH /service-requests/:id/cancel`
 
 Body: `{ "reason": "optional, max 500 chars" }`
 
-| Role | Can cancel when |
-|---|---|
-| customer (owner) | `pending` or `accepted` |
-| provider (assigned) | `accepted` |
-| admin | `pending`, `accepted` or `in_progress` |
+| Role                | Can cancel when                        |
+| ------------------- | -------------------------------------- |
+| customer (owner)    | `pending` or `accepted`                |
+| provider (assigned) | `accepted`                             |
+| admin               | `pending`, `accepted` or `in_progress` |
 
 ### `POST /service-requests/:id/review` — customer
 

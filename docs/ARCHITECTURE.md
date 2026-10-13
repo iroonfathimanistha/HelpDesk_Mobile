@@ -1,172 +1,77 @@
-# System Architecture
+# Architecture
 
-> Status: Core backend implemented (auth, categories, providers, service requests, reviews). External integrations are planned.
-
-## Overview
-
-The platform consists of three client applications and one backend API. The backend is the **only** component that accesses the database and external services.
-
-```mermaid
-flowchart TD
-    subgraph Clients
-        CA[Customer App<br/>React Native]
-        PA[Provider App<br/>React Native]
-        AD[Admin Dashboard<br/>React.js]
-    end
-
-    CA -->|HTTPS + JWT| API
-    PA -->|HTTPS + JWT| API
-    AD -->|HTTPS + JWT| API
-
-    API[Backend API<br/>Node.js + Express.js]
-
-    API -->|Sequelize ORM| DB[(PostgreSQL)]
-
-    subgraph External Services
-        AI[LLM API]
-        VAI[Vision AI API]
-        MAPS[Maps API]
-        FCM[Firebase Cloud Messaging]
-        S3[AWS S3]
-    end
-
-    API --> AI
-    API --> VAI
-    API --> MAPS
-    API --> FCM
-    API --> S3
-```
+HelpDesk is an on-demand home-services platform for Sri Lanka. Customers book verified tradespeople (plumbers, electricians, AC technicians, …); providers accept and complete jobs; admins verify providers and handle complaints. All prices are in **LKR**.
 
 ## Components
 
-| Component | Responsibility |
-|---|---|
-| **Customer App** | Customers describe a household problem, view suggested providers and manage bookings. |
-| **Provider App** | Providers manage their profile and availability and respond to job requests. |
-| **Admin Dashboard** | Administrators verify providers, manage service categories and monitor activity. |
-| **Backend API** | Authentication, authorization (roles), business rules, provider matching and all external integrations. |
-| **PostgreSQL** | Persistent storage for users, providers, services, bookings and reviews. |
-
-## External Integrations (backend only)
-
-| Service | Planned use | Backend location |
-|---|---|---|
-| LLM API | Understand the customer's problem description and suggest a service category | `backend/src/services/ai/` |
-| Vision AI API | Analyse photos of the problem uploaded by the customer | `backend/src/services/ai/` |
-| Maps API | Locations, distances and nearby provider search | `backend/src/services/matching/` |
-| Firebase Cloud Messaging | Push notifications to the mobile apps | `backend/src/services/notifications/` |
-| AWS S3 | Storing uploaded images (problem photos, profile photos, documents) | `backend/src/services/storage/` |
-
-## Key Principles
-
-1. **Clients never hold secrets.** API keys for AI, maps (server-side), S3 and Firebase Admin stay in the backend.
-2. **Layered backend.** Routes → Middleware → Controllers → Services → Models.
-3. **Role-based access.** Every authenticated request carries a JWT that identifies the user and role (`customer`, `provider`, `admin`).
-
-## Backend Request Flow
-
-```
-Request → Route → Middleware (authenticate, authorize role, validate) → Controller → Service → Model → PostgreSQL
+```mermaid
+flowchart LR
+  C[Customer app<br/>Expo / React Native] -->|HTTPS JSON| API
+  P[Provider app<br/>Expo / React Native] -->|HTTPS JSON| API
+  A[Admin web<br/>React + Vite] -->|HTTPS JSON| API
+  API[Backend API<br/>Express + TypeScript<br/>/api/*] --> DB[(PostgreSQL<br/>Sequelize)]
+  API --> G[Google Gemini<br/>server-side only]
 ```
 
-| Layer | Folder | Responsibility |
-|---|---|---|
-| Route | `backend/src/routes/` | Maps URL + HTTP method to middleware and a controller. No logic. |
-| Middleware | `backend/src/middleware/` | JWT authentication, role checks, validation errors, error responses. |
-| Validator | `backend/src/validators/` | Rules for request body, params and query. |
-| Controller | `backend/src/controllers/` | Reads validated input, calls a service, sends the JSON response. |
-| Service | `backend/src/services/` | Business rules (e.g. who may accept a job) and database work. |
-| Model | `backend/src/models/` | Sequelize models and relationships. |
+| Folder                 | What it is                                                                                                       |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `apps/customer-mobile` | Customer app (Expo Router). Browse categories/providers, book, track, chat, review, complain.                    |
+| `apps/provider-mobile` | Provider app (Expo Router). Verification, job radar, job workflow, cost proposals, earnings.                     |
+| `apps/admin-web`       | Admin dashboard (React, Vite, Tailwind, react-router). Verification queue, bookings, users.                      |
+| `backend`              | The single REST API all three apps use. Express, Sequelize (PostgreSQL), JWT, bcrypt, Gemini.                    |
+| `packages/shared`      | Types, constants (roles, booking statuses, categories), the fetch-based API client and the React `AuthProvider`. |
+| `e2e`                  | Playwright end-to-end tests.                                                                                     |
 
-The full endpoint list is in [API_SPEC.md](API_SPEC.md).
+## API
 
-## Data Model
+- Every endpoint is under the **`/api`** prefix, e.g. `GET /api/health` → `{ "ok": true }`.
+- Auth: `Authorization: Bearer <JWT>`. `requireAuth` checks the token; `requireRole('ADMIN' | 'PROVIDER' | 'CUSTOMER')` checks the role.
+- Each feature is a module in `backend/src/modules/<name>/` with `<name>.routes.ts` → `<name>.controller.ts` (HTTP only) → `<name>.service.ts` (business logic + DB).
+- Until a handler is built it returns **501 Not Implemented**.
+- Mobile apps read the API URL from `EXPO_PUBLIC_API_URL`; the admin web from `VITE_API_URL`.
+- The Gemini API key is only ever on the backend (`GEMINI_API_KEY`). Apps call `/api/ai/*`.
 
-Schema is created by the migrations in [`database/migrations/`](../database/migrations/).
+| Module          | Routes                                                                                                                                                                      |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `auth`          | `POST /auth/register`, `POST /auth/login`, `GET /auth/me`, `POST /auth/logout`, `POST /auth/switch-mode`                                                                    |
+| `admin`         | `/admin/dashboard`, `/admin/users`, `/admin/users/:id/status`, `/admin/providers/pending`, `/admin/providers/:id/verification`, `/admin/pricing-rules`, `/admin/complaints` |
+| `users`         | `/users/me`, `/users/me/addresses`, `/users/me/notification-preferences`, `/users/me/app-settings`, `/users/me/change-password`, `/users/me/account`                        |
+| `catalog`       | `GET /categories`, `GET /providers`, `GET /providers/:id`                                                                                                                   |
+| `bookings`      | `POST /service-requests`, `GET /service-requests`, `GET /service-requests/:id`                                                                                              |
+| `provider`      | `/providers/me`, `/providers/me/verification`, `/providers/me/category-pricing`, `/providers/me/availability`                                                               |
+| `jobs`          | `POST /service-requests/:id/accept` (atomic lock), `PATCH /service-requests/:id/status`, `POST /service-requests/:id/propose-cost`                                          |
+| `tracking`      | `POST /service-requests/:id/respond-cost`, `/confirm-completion`, `/cancel`                                                                                                 |
+| `messages`      | `GET/POST /service-requests/:id/messages`                                                                                                                                   |
+| `reviews`       | `POST /service-requests/:id/reviews`, `GET /providers/:id/reviews`, `POST /providers/reviews/:id/respond`                                                                   |
+| `complaints`    | `POST /service-requests/:id/complaints`                                                                                                                                     |
+| `notifications` | `GET /notifications`, `PATCH /notifications/:id/read`, `PATCH /notifications/read-all`                                                                                      |
+| `ai`            | `POST /ai/classify`, `POST /ai/project-plan`                                                                                                                                |
+
+## Booking status flow
+
+Defined once in `packages/shared/src/constants/bookingStatus.ts` (`BOOKING_STATUS_TRANSITIONS` + `canTransition()`); the backend and apps both use it.
 
 ```mermaid
-erDiagram
-    users ||--o| provider_profiles : "has (providers only)"
-    provider_profiles }o--o{ service_categories : "offers (provider_categories)"
-    users ||--o{ service_requests : "creates (customer_id)"
-    users |o--o{ service_requests : "is assigned (provider_id)"
-    service_categories ||--o{ service_requests : "categorises"
-    service_requests ||--o| reviews : "receives"
-
-    users {
-        int id PK
-        string full_name
-        string email UK
-        string phone
-        string password_hash
-        enum role "customer | provider | admin"
-        bool is_active
-    }
-    provider_profiles {
-        int id PK
-        int user_id FK, UK
-        text bio
-        int years_of_experience
-        decimal hourly_rate
-        string city
-        double latitude
-        double longitude
-        bool is_available
-        bool is_verified
-        decimal average_rating
-        int total_reviews
-    }
-    service_categories {
-        int id PK
-        string name UK
-        string slug UK
-        text description
-        bool is_active
-    }
-    service_requests {
-        int id PK
-        int customer_id FK
-        int provider_id FK "null until accepted"
-        int category_id FK
-        string title
-        text description
-        string address
-        datetime preferred_date
-        enum status "pending | accepted | in_progress | completed | cancelled | declined"
-    }
-    reviews {
-        int id PK
-        int service_request_id FK, UK
-        int customer_id FK
-        int provider_id FK
-        smallint rating "1-5"
-        text comment
-    }
+stateDiagram-v2
+  [*] --> PENDING: customer creates request
+  PENDING --> ACCEPTED: provider accepts (first one wins)
+  ACCEPTED --> ON_THE_WAY: Start Journey
+  ON_THE_WAY --> IN_PROGRESS: Start Work
+  IN_PROGRESS --> AWAITING_CUSTOMER_CONFIRMATION: Submit Invoice
+  AWAITING_CUSTOMER_CONFIRMATION --> COMPLETED: customer confirms
+  AWAITING_CUSTOMER_CONFIRMATION --> IN_PROGRESS: customer says not done
+  PENDING --> CANCELLED
+  ACCEPTED --> CANCELLED
+  ON_THE_WAY --> CANCELLED
+  COMPLETED --> [*]
+  CANCELLED --> [*]
 ```
 
-## Booking Flow
+- The customer tracker shows the 6 non-cancelled steps (`BOOKING_TRACKER_STEPS`).
+- The provider can send a **cost proposal** while the job is active; the customer accepts or rejects it (`respond-cost`).
+- Once work has started, problems go through a **complaint** rather than a cancellation.
+- Every change writes a `StatusHistory` row.
 
-```mermaid
-sequenceDiagram
-    actor C as Customer App
-    participant API as Backend API
-    actor P as Provider App
+## Data model
 
-    C->>API: POST /service-requests (category, problem, address)
-    API-->>C: 201 status = pending
-    P->>API: GET /service-requests/available
-    API-->>P: open jobs in provider's categories
-    P->>API: PATCH /service-requests/:id/accept
-    API-->>P: 200 status = accepted (first provider wins)
-    P->>API: PATCH /service-requests/:id/start
-    P->>API: PATCH /service-requests/:id/complete
-    C->>API: GET /service-requests/:id
-    API-->>C: status = completed
-    C->>API: POST /service-requests/:id/review (rating 1-5)
-    API-->>C: 201, provider rating updated
-```
-
-## To Be Documented
-
-- Deployment architecture (Render / AWS)
-- AI, maps, notification and storage integrations once built
+Sequelize models in `backend/src/db/models/`: `User`, `ProviderProfile`, `Category`, `ServiceRequest`, `StatusHistory`, `CostProposal`, `Message`, `Review`, `Complaint`, `Notification`, `Address`, `PricingRule`, `AuditLog`. Schema changes are made only through migrations in `backend/src/db/migrations/` (Member 4).

@@ -1,128 +1,90 @@
-# On-Demand Skilled Services Platform Application
+# HelpDesk
 
-> An AI-powered marketplace that helps customers find the right, trusted, nearby skilled professional for household problems.
+On-demand home-services platform for Sri Lanka. Customers book verified plumbers, electricians, AC technicians and other tradespeople; providers accept and complete jobs; admins verify providers and resolve complaints.
 
-| | |
-|---|---|
-| **Team** | PixelPioneers |
-| **Institution** | Sabaragamuwa University of Sri Lanka |
-| **Status** | 🚧 Currently in Phase 2: Core Backend |
+Three apps share one backend:
 
----
+| Folder                 | App                                                               |
+| ---------------------- | ----------------------------------------------------------------- |
+| `apps/customer-mobile` | Customer mobile app (Expo, React Native, Expo Router)             |
+| `apps/provider-mobile` | Provider / technician mobile app (Expo, Expo Router)              |
+| `apps/admin-web`       | Admin web dashboard (React, Vite, Tailwind, react-router)         |
+| `backend`              | REST API (Express, TypeScript, Sequelize/PostgreSQL, JWT, Gemini) |
+| `packages/shared`      | Shared types, constants and API client used by all apps           |
+| `e2e`                  | End-to-end tests (Playwright)                                     |
 
-## 1. Project Description
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how it fits together and [docs/TEAM.md](docs/TEAM.md) for who owns what.
 
-The On-Demand Skilled Services Platform connects households with verified skilled professionals such as plumbers, electricians, carpenters, masons, painters, AC/refrigeration technicians, appliance repairers, cleaners and gardeners.
+> **Status:** scaffold only. Screens are placeholders and API routes return `501 Not Implemented`.
 
-The platform is planned to use AI to help customers describe their problem (in text or with a photo), identify the type of service they need, and match them with a suitable, nearby, trusted provider.
+## Requirements
 
-## 2. Problem Being Solved
+- Node.js **22.12+** (24 recommended) and npm 10+
+- PostgreSQL 15+ for the backend
+- [Expo Go](https://expo.dev/go) on your phone (SDK 57), or an Android emulator / iOS simulator
 
-Finding a reliable skilled worker for a household problem is often difficult:
+## Install
 
-- Customers do not always know **which type of professional** their problem needs.
-- It is hard to find someone who is **nearby and available** at short notice.
-- There is little **trust information** (verification, ratings, past work) to help choose a provider.
-- Skilled workers lack a simple channel to **find customers** and manage job requests.
-
-## 3. Target Users
-
-| User | Description |
-|---|---|
-| **Customers** | Households that need a skilled professional for a repair, installation or maintenance task. |
-| **Service Providers** | Independent skilled workers offering services such as plumbing, electrical work or cleaning. |
-| **Administrators** | Platform staff who verify providers, manage categories and monitor platform activity. |
-
-### Planned Service Categories
-
-Plumbing · Electrical · Carpentry · Masonry · Painting · AC/Refrigeration Repair · Appliance Repair · Cleaning · Gardening
-
-## 4. Planned Applications
-
-| Application | Folder | Technology | Purpose |
-|---|---|---|---|
-| Customer App | [`mobile/customer/`](mobile/customer/) | React Native | Customers describe problems and book providers |
-| Provider App | [`mobile/provider/`](mobile/provider/) | React Native | Providers receive and manage job requests |
-| Admin Dashboard | [`admin-dashboard/`](admin-dashboard/) | React.js | Administrators manage the platform |
-| Backend API | [`backend/`](backend/) | Node.js + Express.js | Central REST API used by all three clients |
-| Database | [`database/`](database/) | PostgreSQL + Sequelize | Migrations and seed data |
-
-## 5. Technology Stack
-
-| Layer | Technology |
-|---|---|
-| Customer mobile app | React Native |
-| Provider mobile app | React Native |
-| Admin dashboard | React.js |
-| Backend | Node.js, Express.js |
-| Database | PostgreSQL |
-| ORM | Sequelize |
-| Authentication | JWT |
-| AI | LLM API, Vision-capable AI API |
-| Maps | Maps API |
-| Push notifications | Firebase Cloud Messaging |
-| File storage | AWS S3 |
-| API testing | Postman |
-| Version control | Git + GitHub |
-| Deployment | Render / AWS |
-
-## 6. High-Level Architecture
-
-All client applications communicate **only** with the Backend API. The backend is the single place that talks to the database and to external services (AI, maps, notifications, storage), so no secrets are ever shipped inside the mobile or web apps.
-
-```mermaid
-flowchart TD
-    CA[Customer App<br/>React Native] --> API
-    PA[Provider App<br/>React Native] --> API
-    AD[Admin Dashboard<br/>React.js] --> API
-
-    API[Backend API<br/>Node.js + Express.js] --> DB[(PostgreSQL)]
-
-    API --> AI[LLM API]
-    API --> VAI[Vision AI API]
-    API --> MAPS[Maps API]
-    API --> FCM[Firebase Cloud Messaging]
-    API --> S3[AWS S3]
+```bash
+npm install          # installs every workspace and builds packages/shared
 ```
 
-More detail: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · API reference: [`docs/API_SPEC.md`](docs/API_SPEC.md)
+Then create the env files from the examples:
 
-## 7. Repository Structure
-
-```
-.
-├── backend/             # Node.js + Express.js REST API            (Member 3)
-├── database/            # Sequelize config, migrations, seeders     (Member 4)
-├── docs/                # ARCHITECTURE.md, API_SPEC.md, decisions   (Member 4)
-├── mobile/
-│   ├── customer/        # React Native customer app (JavaScript)    (Member 1)
-│   └── provider/        # React Native provider app (JavaScript)    (Member 2)
-├── admin-dashboard/     # React.js web dashboard for administrators
-├── .gitignore
-└── README.md
+```bash
+cp backend/.env.example backend/.env
+cp apps/admin-web/.env.example apps/admin-web/.env
+cp apps/customer-mobile/.env.example apps/customer-mobile/.env
+cp apps/provider-mobile/.env.example apps/provider-mobile/.env
 ```
 
-The whole project uses **JavaScript** and **npm**. Each application is self-contained with its own `package.json` and is installed and run independently.
+## Run
 
-## 8. Current Development Status
+| Command                | What it does                                                      |
+| ---------------------- | ----------------------------------------------------------------- |
+| `npm run dev:backend`  | API on http://localhost:4000/api (try `/api/health`)              |
+| `npm run dev:admin`    | Admin web on http://localhost:5173                                |
+| `npm run dev:customer` | Expo dev server for the customer app (scan the QR with Expo Go)   |
+| `npm run dev:provider` | Expo dev server for the provider app                              |
+| `npm run dev:shared`   | Rebuilds `packages/shared` on every change (run while editing it) |
 
-**Currently in Phase 2: Core Backend**
+### Backend
 
-- [x] Monorepo folder structure
-- [x] Backend REST API: authentication (JWT + roles), service categories, provider profiles, service request lifecycle, reviews — see [`docs/API_SPEC.md`](docs/API_SPEC.md)
-- [x] Database migrations and category seed data (drafts for Member 4 to review)
-- [ ] Customer and provider mobile apps
-- [ ] Admin dashboard
-- [ ] AI problem classification, nearby search (maps), push notifications, photo uploads, payments
+1. Create a database: `createdb helpdesk`
+2. Set `DATABASE_URL` and `JWT_SECRET` in `backend/.env` (and `GEMINI_API_KEY` for the AI features)
+3. `npm run db:migrate` then `npm run db:seed`
+4. `npm run dev:backend`
 
-## Running the Backend
+The API starts even if the database is unreachable (it logs a warning), so `/api/health` always works.
 
-See [`backend/README.md`](backend/README.md).
+### Mobile apps and `EXPO_PUBLIC_API_URL`
 
-## Security Note
+The mobile apps call the backend through **`EXPO_PUBLIC_API_URL`** in their `.env`. `localhost` on a phone means the phone, not your computer, so use:
 
-Real credentials (API keys, database passwords, JWT secrets, AWS keys, Firebase service accounts) must **never** be committed. Copy each `.env.example` to `.env` locally and fill in your own values — `.env` files are ignored by Git.
+| Where the app runs   | `EXPO_PUBLIC_API_URL`                                                         |
+| -------------------- | ----------------------------------------------------------------------------- |
+| Real phone (Expo Go) | `http://<your-computer-LAN-IP>:4000/api`, e.g. `http://192.168.1.10:4000/api` |
+| Android emulator     | `http://10.0.2.2:4000/api`                                                    |
+| iOS simulator        | `http://localhost:4000/api`                                                   |
 
----
+Phone and computer must be on the same Wi-Fi, and Windows Firewall must allow Node on port 4000. Restart Expo after changing `.env`.
 
-© PixelPioneers — Sabaragamuwa University of Sri Lanka
+### Admin web
+
+Reads `VITE_API_URL` from `apps/admin-web/.env` (default `http://localhost:4000/api`).
+
+## Other scripts
+
+| Command              | What it does                                          |
+| -------------------- | ----------------------------------------------------- |
+| `npm run build`      | Builds `packages/shared`, `backend` and `admin-web`   |
+| `npm run typecheck`  | Type-checks every workspace                           |
+| `npm run lint`       | ESLint across the repo                                |
+| `npm run format`     | Prettier on the whole repo                            |
+| `npm run db:migrate` | Runs backend migrations                               |
+| `npm run db:seed`    | Runs backend seeders (demo data)                      |
+| `npm run test:e2e`   | Playwright end-to-end tests (backend must be running) |
+
+## Working together
+
+Read [docs/TEAM.md](docs/TEAM.md) before you start. In short: edit only files you own, shared types/API client changes go through Member 3, database changes go through Member 4, and each member works on their own branch and merges by pull request.
