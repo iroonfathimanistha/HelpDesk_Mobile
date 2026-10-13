@@ -16,6 +16,7 @@ import { Notification, initNotification } from './Notification';
 import { Address, initAddress } from './Address';
 import { PricingRule, initPricingRule } from './PricingRule';
 import { AuditLog, initAuditLog } from './AuditLog';
+import { Transaction, initTransaction } from './Transaction';
 
 export function initModels(sequelize: Sequelize) {
   initUser(sequelize);
@@ -31,6 +32,7 @@ export function initModels(sequelize: Sequelize) {
   initAddress(sequelize);
   initPricingRule(sequelize);
   initAuditLog(sequelize);
+  initTransaction(sequelize);
   associateModels();
 }
 
@@ -52,4 +54,5 @@ export {
   Address,
   PricingRule,
   AuditLog,
+  Transaction,
 };
