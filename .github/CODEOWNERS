@@ -1,5 +1,8 @@
 # HelpDesk code owners. Replace @member1..@member4 with real GitHub usernames.
 # The LAST matching line wins, so general rules come first and specific ones after.
+# M1 = @member1 Customer App | M2 = @member2 Provider App, Onboarding & Tests
+# M3 = @member3 Tracking, Messaging, AI & Shared | M4 = @member4 Admin, Auth & Database
+# Full matrix: docs/OWNERSHIP.md
 
 # ---------- Member 4: repo setup, backend core, database, auth, admin web ----------
 *                                                       @member4
