@@ -1,13 +1,14 @@
-# Legacy code (pre-scaffold)
+# Legacy code
 
-The project's first version, moved here when the TypeScript monorepo was scaffolded. It is **not** part of the npm workspaces, build, lint or typecheck.
+Earlier versions of HelpDesk, kept for reference. None of this is part of the current app's install, build or typecheck (the app at the repo root only compiles `src/` and `server.ts`).
 
-| Folder             | What it was                                                                       |
-| ------------------ | --------------------------------------------------------------------------------- |
-| `backend/`         | Working JavaScript Express + Sequelize API (auth, providers, service requests, reviews) with Jest tests |
-| `database/`        | Sequelize migrations/seeders for that API                                         |
-| `admin-dashboard/` | Empty React folder structure                                                      |
-| `mobile/`          | Placeholder customer/provider apps                                                |
-| `shared-types/`    | First draft of the shared types (now merged into `packages/shared`)               |
+| Folder             | What it was                                                                                                   |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `monorepo/`        | The npm-workspaces scaffold (Expo customer/provider apps, admin web, modular Express + Sequelize backend, `packages/shared`, Playwright e2e, team ownership docs). Replaced by the single-app layout at the root. |
+| `backend/`         | First working JavaScript Express + Sequelize API (auth, providers, service requests, reviews) with Jest tests |
+| `database/`        | Sequelize migrations/seeders for that API                                                                     |
+| `admin-dashboard/` | Empty React folder structure                                                                                  |
+| `mobile/`          | Placeholder customer/provider apps                                                                            |
+| `shared-types/`    | First draft of the shared types                                                                               |
 
-Members can copy logic from here into their new TypeScript modules. Delete this folder once nothing more is needed. It also stays in git history (commit `49a45f2`).
+Copy logic from here if it is useful, and delete the folder once nothing more is needed. Everything also stays in git history.
